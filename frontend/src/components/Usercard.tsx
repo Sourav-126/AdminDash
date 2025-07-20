@@ -13,7 +13,6 @@ import axios from "axios";
 import type { AxiosResponse } from "axios";
 import { toast } from "sonner";
 
-// Type definitions to match your Prisma schema
 type TaskStatus = "Pending" | "Completed" | "inProgress";
 type TaskPriority = "Low" | "Medium" | "High";
 
@@ -96,7 +95,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
 
         if (response.status === 200) {
           if (Array.isArray(response.data)) {
-            // If the API ever returns a plain array (unlikely), this will catch it
             setTasks(response.data);
           } else if (Array.isArray(response.data.tasks)) {
             setTasks(response.data.tasks);
@@ -157,7 +155,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         toast.success("Task added successfully");
 
         if (Array.isArray(response.data)) {
-          // If the API ever returns a plain array (unlikely), this will catch it
           setTasks(response.data);
         } else if (Array.isArray(response.data.tasks)) {
           setTasks(response.data.tasks);
@@ -165,7 +162,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           toast.error("Unexpected response format");
         }
 
-        // Reset form
         setNewTask({
           title: "",
           description: "",
@@ -209,7 +205,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       );
 
       if (response.status === 200) {
-        // Update local state
         setTasks((prevTasks: Task[]) =>
           prevTasks.map((task: Task) =>
             task.id === taskId
