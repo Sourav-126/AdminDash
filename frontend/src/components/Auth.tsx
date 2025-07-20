@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import type { SigninInput } from "@/lib/types";
+const baseURL = import.meta.env.VITE_API_URL; 
 
 export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   async function sendRequest() {
     try {
       const response = await axios.post(
-        `${process.env.BACKEND_URL}/api/admin/${
+        `${baseURL}/api/admin/${
           type === "signup" ? "signup" : "signin"
         }`,
         postInputs
@@ -42,7 +43,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
                 : "Already have an account?"}
               <Link
                 className="pl-2 underline"
-                to={type === "signin" ? "/signup" : "/signin"}
+                to={type === "signin" ? "/signup" : "/"}
               >
                 {type === "signin" ? "Sign up" : "Sign in"}
               </Link>

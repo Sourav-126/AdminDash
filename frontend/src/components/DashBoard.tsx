@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navbar } from "./Navbar";
 import { UserCard } from "./Usercard";
-import axios, { type AxiosResponse } from "axios";
+import axios from "axios";
+const baseURL = import.meta.env.VITE_API_URL; // for Vite
 
 interface User {
   id: string;
@@ -20,11 +21,6 @@ interface ApiError extends Error {
   };
 }
 
-interface UsersApiResponse {
-  users?: User[];
-  [key: string]: User[] | undefined;
-}
-
 export const Dashboard: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -41,14 +37,11 @@ export const Dashboard: React.FC = () => {
         return;
       }
 
-      const response: AxiosResponse<UsersApiResponse | User[]> =
-        await axios.get(`${process.env.BACKEND_URL}/api/admin/users`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
-
-      console.log(response.data);
+      const response = await axios.get(`${baseURL}/api/admin/users`, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
 
       let usersData: User[];
       if (Array.isArray(response.data)) {

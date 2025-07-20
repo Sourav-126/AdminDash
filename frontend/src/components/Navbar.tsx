@@ -16,6 +16,7 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRef } from "react";
+const baseURL = import.meta.env.VITE_API_URL; // for Vite
 
 interface NavbarProps {
   onUserCreated: () => void;
@@ -28,7 +29,7 @@ export const Navbar = ({ onUserCreated }: NavbarProps) => {
 
   const handleCreate = async () => {
     const response = await axios.post(
-      `${process.env.BACKEND_URL}/api/admin/create-user`,
+      `${baseURL}/api/admin/create-user`,
       {
         name: name,
         email: email,

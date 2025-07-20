@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 import { toast } from "sonner";
+const baseURL = import.meta.env.VITE_API_URL;
 
 type TaskStatus = "Pending" | "Completed" | "inProgress";
 type TaskPriority = "Low" | "Medium" | "High";
@@ -85,7 +86,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         }
 
         const response: AxiosResponse<TaskResponse> = await axios.get(
-          `${process.env.BACKEND_URL}/api/task/get-tasks/${user.id}`,
+          `${baseURL}/api/task/get-tasks/${user.id}`,
           {
             headers: {
               Authorization: `${token}`,
@@ -141,7 +142,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       };
 
       const response: AxiosResponse<TaskResponse> = await axios.post(
-        `${process.env.BACKEND_URL}/api/task/add-task/${user.id}`,
+        `${baseURL}/api/task/add-task/${user.id}`,
         taskData,
         {
           headers: {
@@ -194,7 +195,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         currentStatus === "Completed" ? "Pending" : "Completed";
 
       const response: AxiosResponse = await axios.patch(
-        `${process.env.BACKEND_URL}/api/task/update-status/${taskId}`,
+        `${baseURL}/api/task/update-status/${taskId}`,
         { status: newStatus },
         {
           headers: {
