@@ -31,7 +31,6 @@ adminRouter.post("/create-user", async (req: Request, res: Response) => {
     });
     res.json(newUser.id);
   } catch (error) {
-    console.log("error happens", error);
     res.json({
       message: "Error making the User",
     });
@@ -73,7 +72,7 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-adminRouter.post("/signin", async (req:Request, res:Response) => {
+adminRouter.post("/signin", async (req: Request, res: Response) => {
   const body = await req.body;
 
   const { email } = body;
@@ -102,7 +101,7 @@ adminRouter.post("/signin", async (req:Request, res:Response) => {
   }
 });
 
-adminRouter.get("/users", middleware, async (req:Request, res:Response) => {
+adminRouter.get("/users", middleware, async (req: Request, res: Response) => {
   const users = await prisma.user.findMany({
     where: {},
   });

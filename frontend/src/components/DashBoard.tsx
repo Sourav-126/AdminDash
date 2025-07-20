@@ -54,7 +54,6 @@ export const Dashboard: React.FC = () => {
 
       setUsers(usersData);
     } catch (err) {
-      console.error("Error fetching users:", err);
       const apiError = err as ApiError;
       const errorMessage: string =
         apiError.response?.data?.message ||
@@ -69,8 +68,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  console.log(users);
 
   const handleUserCreated = (): void => {
     fetchUsers();

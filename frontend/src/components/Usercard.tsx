@@ -100,11 +100,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
           } else if (Array.isArray(response.data.tasks)) {
             setTasks(response.data.tasks);
           } else {
-            toast.error("Unexpected response format");
+            console.log("unexpected response format");
           }
         }
       } catch (error) {
-        console.error("Error fetching tasks:", error);
         const apiError = error as ApiError;
         const errorMessage: string =
           apiError.response?.data?.message || "Failed to fetch tasks";
@@ -160,7 +159,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         } else if (Array.isArray(response.data.tasks)) {
           setTasks(response.data.tasks);
         } else {
-          toast.error("Unexpected response format");
+          console.log("Unexpected response format:");
         }
 
         setNewTask({
@@ -172,7 +171,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         setIsAddTaskOpen(false);
       }
     } catch (error) {
-      console.error("Error adding task:", error);
       const apiError = error as ApiError;
       const errorMessage: string =
         apiError.response?.data?.message || "Failed to add task";
@@ -219,7 +217,6 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         toast.success("Task status updated");
       }
     } catch (error) {
-      console.error("Error updating task status:", error);
       const apiError = error as ApiError;
       const errorMessage: string =
         apiError.response?.data?.message || "Failed to update task status";

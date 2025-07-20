@@ -2,7 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import type { SigninInput } from "@/lib/types";
-const baseURL = import.meta.env.VITE_API_URL; 
+const baseURL = import.meta.env.VITE_API_URL;
 
 export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   const navigate = useNavigate();
@@ -15,17 +15,14 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   async function sendRequest() {
     try {
       const response = await axios.post(
-        `${baseURL}/api/admin/${
-          type === "signup" ? "signup" : "signin"
-        }`,
+        `${baseURL}/api/admin/${type === "signup" ? "signup" : "signin"}`,
         postInputs
       );
       const jwt = await response.data.token;
       localStorage.setItem("token", jwt);
       navigate("/dashboard");
-    } catch (error) {
-      alert("error signing up!");
-      console.log(error);
+    } catch {
+      alert("Error while signing up");
     }
   }
 
