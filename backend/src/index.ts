@@ -12,6 +12,8 @@ app.use(cors());
 app.use("/api/admin", adminRouter);
 app.use("/api/task", taskRouter);
 
-app.listen("3000", () => {
-  console.log("Server Listening at 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server Listening at ${PORT}`);
 });
