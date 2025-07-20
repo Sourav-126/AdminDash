@@ -1,10 +1,11 @@
 import express from "express";
 import { prisma } from "../lib/prisma";
 import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 import { middleware } from "../middleware/middleware";
 export const adminRouter = express();
 
-adminRouter.post("/create-user", async (req, res) => {
+adminRouter.post("/create-user", async (req: Request, res: Response) => {
   const body = req.body;
 
   const { name, email } = body;
@@ -36,7 +37,7 @@ adminRouter.post("/create-user", async (req, res) => {
     });
   }
 });
-adminRouter.post("/signup", async (req, res) => {
+adminRouter.post("/signup", async (req: Request, res: Response) => {
   const body = await req.body;
 
   const { name, email, password } = body;
@@ -72,7 +73,7 @@ adminRouter.post("/signup", async (req, res) => {
   }
 });
 
-adminRouter.post("/signin", async (req, res) => {
+adminRouter.post("/signin", async (req:Request, res:Response) => {
   const body = await req.body;
 
   const { email } = body;
@@ -101,11 +102,9 @@ adminRouter.post("/signin", async (req, res) => {
   }
 });
 
-adminRouter.get("/users", middleware, async (req, res) => {
+adminRouter.get("/users", middleware, async (req:Request, res:Response) => {
   const users = await prisma.user.findMany({
-    where: {
-      
-    },
+    where: {},
   });
   res.json(users);
 });

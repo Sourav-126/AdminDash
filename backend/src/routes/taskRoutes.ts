@@ -1,23 +1,22 @@
 import express from "express";
 import { middleware } from "../middleware/middleware";
 import { prisma } from "../lib/prisma";
-
+import { Request, Response } from "express";
 export const taskRouter = express();
 
-taskRouter.post("/add-task/:id", middleware, async (req, res) => {
+taskRouter.post("/add-task/:id", middleware, async (req:Request, res:Response) => {
   try {
     const body = req.body;
     const { title, description, dueDate, priority, status } = body;
     const userId = req.params.id;
 
-    // Validation
     if (!title || !description) {
       return res.status(400).json({
         error: "Title and description are required",
       });
     }
 
-    // Check if user exists
+
     const userExists = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -51,7 +50,7 @@ taskRouter.post("/add-task/:id", middleware, async (req, res) => {
   }
 });
 
-taskRouter.get("/get-tasks/:id", middleware, async (req, res) => {
+taskRouter.get("/get-tasks/:id", middleware, async (req:Request, res:Response) => {
   const { id: userId } = req.params;
 
   try {
@@ -71,7 +70,7 @@ taskRouter.get("/get-tasks/:id", middleware, async (req, res) => {
   }
 });
 
-taskRouter.patch("/update-status/:taskId", middleware, async (req, res) => {
+taskRouter.patch("/update-status/:taskId", middleware, async (req:Request, res:Response) => {
   const { taskId } = req.params;
 
   const updatedStatus = await prisma.task.update({

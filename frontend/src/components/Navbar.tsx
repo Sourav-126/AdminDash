@@ -15,14 +15,17 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-
 import { useRef } from "react";
 
-export const Navbar = ({ onUserCreated }: { onUserCreated: () => void }) => {
+interface NavbarProps {
+  onUserCreated: () => void;
+}
+
+export const Navbar = ({ onUserCreated }: NavbarProps) => {
   const [name, setName] = useState("");
   const ref = useRef<HTMLButtonElement>(null);
   const [email, setEmail] = useState("");
-
+  
   const handleCreate = async () => {
     const response = await axios.post(
       "http://localhost:3000/api/admin/create-user",
@@ -46,6 +49,7 @@ export const Navbar = ({ onUserCreated }: { onUserCreated: () => void }) => {
       toast.error("Error Creating User");
     }
   };
+  
   return (
     <div className="border-b flex justify-between px-10 py-4">
       <Link

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { ChangeEvent, MouseEvent, JSX } from "react";
 import {
   Plus,
   List,
@@ -9,15 +10,19 @@ import {
   AlertCircle,
 } from "lucide-react";
 import axios from "axios";
+import type { AxiosResponse } from "axios";
 import { toast } from "sonner";
 
 // Type definitions to match your Prisma schema
+type TaskStatus = "Pending" | "Completed" | "inProgress";
+type TaskPriority = "Low" | "Medium" | "High";
+
 interface Task {
   id: string;
   title: string;
   description: string;
-  status: "Pending" | "Completed" | "inProgress";
-  priority: "Low" | "Medium" | "High";
+  status: TaskStatus;
+  priority: TaskPriority;
   dueDate: string;
   userId: string;
   createdAt: string;
@@ -30,28 +35,57 @@ interface User {
   createdAt: string;
 }
 
-export const UserCard = ({ user }: { user: User }) => {
+interface NewTaskForm {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  dueDate: string;
+}
+
+interface TaskResponse {
+  tasks?: Task[];
+  task?: Task;
+
+  [key: string]: Task[] | Task | string | undefined;
+}
+
+interface ApiError extends Error {
+  response?: {
+    status: number;
+    data: {
+      message?: string;
+      error?: string;
+    };
+  };
+}
+
+interface UserCardProps {
+  user: User;
+}
+
+export const UserCard: React.FC<UserCardProps> = ({ user }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [newTask, setNewTask] = useState({
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [newTask, setNewTask] = useState<NewTaskForm>({
     title: "",
     description: "",
-    priority: "Medium" as "Low" | "Medium" | "High",
+    priority: "Medium",
     dueDate: "",
   });
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchTasks = async (): Promise<void> => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
+        const token: string | null = localStorage.getItem("token");
         if (!token) {
           toast.error("You must be logged in to view tasks");
           return;
         }
-        const response = await axios.get(
+
+        const response: AxiosResponse<TaskResponse> = await axios.get(
           `http://localhost:3000/api/task/get-tasks/${user.id}`,
           {
             headers: {
@@ -61,29 +95,45 @@ export const UserCard = ({ user }: { user: User }) => {
         );
 
         if (response.status === 200) {
-          setTasks(response.data.tasks || response.data);
+          if (Array.isArray(response.data)) {
+            // If the API ever returns a plain array (unlikely), this will catch it
+            setTasks(response.data);
+          } else if (Array.isArray(response.data.tasks)) {
+            setTasks(response.data.tasks);
+          } else {
+            toast.error("Unexpected response format");
+          }
         }
       } catch (error) {
         console.error("Error fetching tasks:", error);
-        toast.error("Failed to fetch tasks");
+        const apiError = error as ApiError;
+        const errorMessage: string =
+          apiError.response?.data?.message || "Failed to fetch tasks";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
     };
+
     if (isDrawerOpen) {
       fetchTasks();
     }
   }, [isDrawerOpen, user.id]);
 
-  const handleAddTask = async () => {
+  const handleAddTask = async (): Promise<void> => {
     if (!newTask.title.trim()) {
       toast.error("Task title is required");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const taskData = {
+      const token: string | null = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You must be logged in to add tasks");
+        return;
+      }
+
+      const taskData: Omit<Task, "id" | "createdAt"> = {
         title: newTask.title,
         description: newTask.description,
         priority: newTask.priority,
@@ -92,12 +142,12 @@ export const UserCard = ({ user }: { user: User }) => {
         userId: user.id,
       };
 
-      const response = await axios.post(
+      const response: AxiosResponse<TaskResponse> = await axios.post(
         `http://localhost:3000/api/task/add-task/${user.id}`,
         taskData,
         {
           headers: {
-            Authorization: `${token}`, // Fixed: Added "Bearer" prefix and moved to correct place
+            Authorization: `${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -105,9 +155,15 @@ export const UserCard = ({ user }: { user: User }) => {
 
       if (response.status === 200 || response.status === 201) {
         toast.success("Task added successfully");
-        // Add the new task to local state
-        const newTaskData = response.data.task || response.data;
-        setTasks([...tasks, newTaskData]);
+
+        if (Array.isArray(response.data)) {
+          // If the API ever returns a plain array (unlikely), this will catch it
+          setTasks(response.data);
+        } else if (Array.isArray(response.data.tasks)) {
+          setTasks(response.data.tasks);
+        } else {
+          toast.error("Unexpected response format");
+        }
 
         // Reset form
         setNewTask({
@@ -120,16 +176,28 @@ export const UserCard = ({ user }: { user: User }) => {
       }
     } catch (error) {
       console.error("Error adding task:", error);
-      toast.error("Failed to add task");
+      const apiError = error as ApiError;
+      const errorMessage: string =
+        apiError.response?.data?.message || "Failed to add task";
+      toast.error(errorMessage);
     }
   };
 
-  const toggleTaskStatus = async (taskId: string, currentStatus: string) => {
+  const toggleTaskStatus = async (
+    taskId: string,
+    currentStatus: TaskStatus
+  ): Promise<void> => {
     try {
-      const token = localStorage.getItem("token");
-      const newStatus = currentStatus === "Completed" ? "Pending" : "Completed";
+      const token: string | null = localStorage.getItem("token");
+      if (!token) {
+        toast.error("You must be logged in to update tasks");
+        return;
+      }
 
-      const response = await axios.patch(
+      const newStatus: TaskStatus =
+        currentStatus === "Completed" ? "Pending" : "Completed";
+
+      const response: AxiosResponse = await axios.patch(
         `http://localhost:3000/api/task/update-status/${taskId}`,
         { status: newStatus },
         {
@@ -142,12 +210,12 @@ export const UserCard = ({ user }: { user: User }) => {
 
       if (response.status === 200) {
         // Update local state
-        setTasks(
-          tasks.map((task) =>
+        setTasks((prevTasks: Task[]) =>
+          prevTasks.map((task: Task) =>
             task.id === taskId
               ? {
                   ...task,
-                  status: newStatus as "Pending" | "Completed" | "inProgress",
+                  status: newStatus,
                 }
               : task
           )
@@ -156,11 +224,14 @@ export const UserCard = ({ user }: { user: User }) => {
       }
     } catch (error) {
       console.error("Error updating task status:", error);
-      toast.error("Failed to update task status");
+      const apiError = error as ApiError;
+      const errorMessage: string =
+        apiError.response?.data?.message || "Failed to update task status";
+      toast.error(errorMessage);
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: TaskStatus): JSX.Element => {
     switch (status) {
       case "Completed":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
@@ -172,7 +243,7 @@ export const UserCard = ({ user }: { user: User }) => {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: TaskPriority): string => {
     switch (priority) {
       case "High":
         return "bg-red-100 text-red-800";
@@ -181,6 +252,37 @@ export const UserCard = ({ user }: { user: User }) => {
       case "Low":
       default:
         return "bg-green-100 text-green-800";
+    }
+  };
+
+  const handleInputChange =
+    (field: keyof NewTaskForm) =>
+    (
+      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ): void => {
+      setNewTask((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
+
+  const handleModalClose = (): void => {
+    setIsAddTaskOpen(false);
+    setNewTask({
+      title: "",
+      description: "",
+      priority: "Medium",
+      dueDate: "",
+    });
+  };
+
+  const handleDrawerToggle = (open: boolean) => (): void => {
+    setIsDrawerOpen(open);
+  };
+
+  const handleBackdropClick = (e: MouseEvent<HTMLDivElement>): void => {
+    if (e.target === e.currentTarget) {
+      setIsDrawerOpen(false);
     }
   };
 
@@ -205,14 +307,16 @@ export const UserCard = ({ user }: { user: User }) => {
           <button
             onClick={() => setIsAddTaskOpen(true)}
             className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            type="button"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Task</span>
           </button>
 
           <button
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={handleDrawerToggle(true)}
             className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+            type="button"
           >
             <List className="w-4 h-4" />
             <span className="hidden sm:inline">View Tasks</span>
@@ -232,8 +336,9 @@ export const UserCard = ({ user }: { user: User }) => {
                 Add New Task
               </h3>
               <button
-                onClick={() => setIsAddTaskOpen(false)}
+                onClick={handleModalClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                type="button"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -241,29 +346,26 @@ export const UserCard = ({ user }: { user: User }) => {
 
             <div className="p-4 space-y-4">
               <div>
-                <div className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Task Title *
-                </div>
+                </label>
                 <input
                   type="text"
                   value={newTask.title}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, title: e.target.value })
-                  }
+                  onChange={handleInputChange("title")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter task title"
+                  required
                 />
               </div>
 
               <div>
-                <div className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
-                </div>
+                </label>
                 <textarea
                   value={newTask.description}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, description: e.target.value })
-                  }
+                  onChange={handleInputChange("description")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={3}
                   placeholder="Enter task description"
@@ -272,17 +374,12 @@ export const UserCard = ({ user }: { user: User }) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Priority
-                  </div>
+                  </label>
                   <select
                     value={newTask.priority}
-                    onChange={(e) =>
-                      setNewTask({
-                        ...newTask,
-                        priority: e.target.value as "Low" | "Medium" | "High",
-                      })
-                    }
+                    onChange={handleInputChange("priority")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="Low">Low</option>
@@ -292,15 +389,13 @@ export const UserCard = ({ user }: { user: User }) => {
                 </div>
 
                 <div>
-                  <div className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Due Date
-                  </div>
+                  </label>
                   <input
                     type="date"
                     value={newTask.dueDate}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, dueDate: e.target.value })
-                    }
+                    onChange={handleInputChange("dueDate")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -310,12 +405,14 @@ export const UserCard = ({ user }: { user: User }) => {
                 <button
                   onClick={handleAddTask}
                   className="flex-1 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors font-medium"
+                  type="button"
                 >
                   Add Task
                 </button>
                 <button
-                  onClick={() => setIsAddTaskOpen(false)}
+                  onClick={handleModalClose}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md transition-colors"
+                  type="button"
                 >
                   Cancel
                 </button>
@@ -336,7 +433,7 @@ export const UserCard = ({ user }: { user: User }) => {
           className={`fixed inset-0 bg-black transition-opacity duration-300 ${
             isDrawerOpen ? "opacity-50" : "opacity-0"
           }`}
-          onClick={() => setIsDrawerOpen(false)}
+          onClick={handleBackdropClick}
         />
 
         <div
@@ -354,8 +451,9 @@ export const UserCard = ({ user }: { user: User }) => {
               </p>
             </div>
             <button
-              onClick={() => setIsDrawerOpen(false)}
+              onClick={handleDrawerToggle(false)}
               className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+              type="button"
             >
               <X className="w-5 h-5" />
             </button>
@@ -374,7 +472,7 @@ export const UserCard = ({ user }: { user: User }) => {
               </div>
             ) : (
               <div className="space-y-3">
-                {tasks.map((task) => (
+                {tasks.map((task: Task) => (
                   <div
                     key={task.id}
                     className={`p-4 rounded-lg border transition-all duration-200 hover:shadow-md ${
@@ -419,6 +517,7 @@ export const UserCard = ({ user }: { user: User }) => {
                       <button
                         onClick={() => toggleTaskStatus(task.id, task.status)}
                         className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition-colors"
+                        type="button"
                       >
                         {task.status === "Completed" ? "Reopen" : "Complete"}
                       </button>

@@ -1,10 +1,11 @@
 import { useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import type { SigninInput } from "@/lib/types";
 
 export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   const navigate = useNavigate();
-  const [postInputs, setPostInputs] = useState({
+  const [postInputs, setPostInputs] = useState<SigninInput>({
     name: "",
     email: "",
     password: "",
@@ -89,12 +90,6 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
               {type === "signup" ? "Sign up" : "Sign in"}
             </button>
           </div>
-          {/* <button
-            className="mt-8 w-full text-white bg-white focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-            onClick={() => login()}
-          >
-            Sign in with Google 🚀
-          </button> */}
         </div>
       </div>
     </div>
