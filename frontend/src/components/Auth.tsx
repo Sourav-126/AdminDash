@@ -14,7 +14,7 @@ export const Auth = ({ type }: { type: "signin" | "signup" }) => {
   async function sendRequest() {
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/admin/${
+        `${process.env.BACKEND_URL}/api/admin/${
           type === "signup" ? "signup" : "signin"
         }`,
         postInputs

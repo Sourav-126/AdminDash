@@ -42,7 +42,7 @@ export const Dashboard: React.FC = () => {
       }
 
       const response: AxiosResponse<UsersApiResponse | User[]> =
-        await axios.get("http://localhost:3000/api/admin/users", {
+        await axios.get(`${process.env.BACKEND_URL}/api/admin/users`, {
           headers: {
             Authorization: `${token}`,
           },

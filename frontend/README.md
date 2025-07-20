@@ -1,69 +1,77 @@
-# React + TypeScript + Vite
+# 🧠 Admin Dashboard Full Stack App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An Admin + User Dashboard built with:
 
-Currently, two official plugins are available:
+- ⚙️ **Express.js** + **Prisma ORM** for backend
+- ⚛️ **React.js / Next.js** for frontend
+- 🛡️ JWT Auth, Task Management, Role-Based Access Control
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📁 Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+├── backend/        # Express + Prisma API
+├── frontend/       # React or Next.js Frontend
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+🚀 Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+🧱 Backend Setup
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+cd backend
+pnpm install
+pnpm prisma generate
+pnpm prisma db push
+pnpm dev
+
+🖥️ Frontend Setup
+
+cd frontend
+pnpm install
+pnpm dev
+
+🔐 Authentication
+
+    JWT-based login system
+
+    Admin, Reviewer, Editor roles
+
+    Middleware for protected routes
+
+🔙 Backend API Routes
+
+| Method | Endpoint                       | Description                 | Auth Required |
+| ------ | ------------------------------ | --------------------------- | ------------- |
+| POST   | `/api/admin/signin` /signup    | Admin Login                 | ❌ No         |
+| GET    | `/api/admin/users`             | Get all users               | ✅ Yes        |
+| POST   | `/api/tasks/add-task/:id`      | Add new task for user       | ✅ Yes        |
+| PATCH  | `/api/tasks/update-status/:id` | Update task status          | ✅ Yes        |
+| GET    | `/api/tasks/get-task/:id`      | Get tasks for specific user | ✅ Yes        |
+
+🌐 Frontend Routes (React.js)
+| Path | Description |
+| ---------------- | --------------------------- |
+| `/login` | Admin login |
+| `/dashboard` | Admin Dashboard |
+| `/users` | List of users |
+| `/tasks/:userId` | Task list for specific user |
+| `/tasks/create` | Create a new task |
+
+🧪 Tech Stack
+
+| Layer    | Tech                   |
+| -------- | ---------------------- |
+| Frontend | React.js, Tailwind CSS |
+| Backend  | Node.js, Express.js    |
+| Database | MongoDB (via Prisma)   |
+| Auth     | JWT                    |
+| ORM      | Prisma                 |
+
+🤝 Contributing
+
+Pull requests are welcome! Feel free to open issues or suggest features.
+📄 License
+
+This project is licensed under the MIT License.

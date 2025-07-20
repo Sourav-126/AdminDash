@@ -85,7 +85,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         }
 
         const response: AxiosResponse<TaskResponse> = await axios.get(
-          `http://localhost:3000/api/task/get-tasks/${user.id}`,
+          `${process.env.BACKEND_URL}/api/task/get-tasks/${user.id}`,
           {
             headers: {
               Authorization: `${token}`,
@@ -141,7 +141,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
       };
 
       const response: AxiosResponse<TaskResponse> = await axios.post(
-        `http://localhost:3000/api/task/add-task/${user.id}`,
+        `${process.env.BACKEND_URL}/api/task/add-task/${user.id}`,
         taskData,
         {
           headers: {
@@ -194,7 +194,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user }) => {
         currentStatus === "Completed" ? "Pending" : "Completed";
 
       const response: AxiosResponse = await axios.patch(
-        `http://localhost:3000/api/task/update-status/${taskId}`,
+        `${process.env.BACKEND_URL}/api/task/update-status/${taskId}`,
         { status: newStatus },
         {
           headers: {

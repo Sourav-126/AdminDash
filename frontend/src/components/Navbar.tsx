@@ -25,10 +25,10 @@ export const Navbar = ({ onUserCreated }: NavbarProps) => {
   const [name, setName] = useState("");
   const ref = useRef<HTMLButtonElement>(null);
   const [email, setEmail] = useState("");
-  
+
   const handleCreate = async () => {
     const response = await axios.post(
-      "http://localhost:3000/api/admin/create-user",
+      `${process.env.BACKEND_URL}/api/admin/create-user`,
       {
         name: name,
         email: email,
@@ -49,7 +49,7 @@ export const Navbar = ({ onUserCreated }: NavbarProps) => {
       toast.error("Error Creating User");
     }
   };
-  
+
   return (
     <div className="border-b flex justify-between px-10 py-4">
       <Link
